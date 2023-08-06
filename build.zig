@@ -13,6 +13,11 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
+    const raylib_dep = b.dependency("raylib", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     _ = b.addModule("raygui", .{
         .source_file = .{ .path = "raygui.zig" },
         .dependencies = &.{
@@ -31,6 +36,8 @@ pub fn build(b: *std.Build) !void {
         .file = relative("raygui_marshal.c"),
         .flags = &.{"-DRAYGUI_IMPLEMENTATION"},
     });
+    lib.linkLibrary(raylib_dep.artifact("raylib"));
+    b.installArtifact(lib);
 
     //--- parse raygui and generate JSONs for all signatures --------------------------------------
     const jsons = b.step("parse", "parse raygui headers and generate raylib parser output as json");

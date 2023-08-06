@@ -6,5 +6,9 @@
             .url = "https://github.com/mattnite/raylib-zig/archive/b101c9387371d702a4fcc0f07e23fdb2e90625f4.tar.gz",
             .hash = "122059d364849d57bf17f2dada2cbd343bba6d1740d6f191821b8467b25bc73a845a",
         },
+        .raylib = .{
+            .url = "https://github.com/mattnite/raylib/archive/bc1b8f55510c83d1a8a2c8d8f3792c03066293b3.tar.gz",
+            .hash = "1220160cc37e4240a8cd0729783c3b47a3a5119e9c0c99f90f5a580371057b880201",
+        },
     },
 }
