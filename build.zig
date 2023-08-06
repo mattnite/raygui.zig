@@ -1,20 +1,57 @@
 const std = @import("std");
+const relative = std.Build.FileSource.relative;
 const generate = @import("generate.zig");
 
 const rayguiSrc = "raygui/src/";
 
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const raylib_zig_dep = b.dependency("raylib_zig", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const raylib_dep = b.dependency("raylib", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    _ = raylib_dep;
+
+    const mod = b.addModule("raygui", .{
+        .source_file = .{ .path = "raygui.zig" },
+        .dependencies = &.{
+            .{ .name = "raylib", .module = raylib_zig_dep.module("raylib") },
+        },
+    });
+    _ = mod;
+
+    const lib = b.addStaticLibrary(.{
+        .name = "raygui_marshal",
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    lib.addIncludePath(.{ .path = "." });
+    lib.addCSourceFile(.{
+        .file = relative("raygui_marshal.c"),
+        .flags = &.{"-DRAYGUI_IMPLEMENTATION"},
+    });
 
     //--- parse raygui and generate JSONs for all signatures --------------------------------------
     const jsons = b.step("parse", "parse raygui headers and generate raylib parser output as json");
     const raylib_parser_build = b.addExecutable(.{
         .name = "raylib_parser",
-        .root_source_file = std.build.FileSource.relative("raylib_parser.zig"),
+        .root_source_file = relative("raylib_parser.zig"),
         .target = target,
-        .optimize = .ReleaseFast,
+        .optimize = .ReleaseSafe,
     });
-    raylib_parser_build.addCSourceFile("../raylib/raylib/parser/raylib_parser.c", &.{});
+    raylib_parser_build.addCSourceFile(.{
+        .file = .{ .path = "../raylib/raylib/parser/raylib_parser.c" },
+        .flags = &.{},
+    });
     raylib_parser_build.linkLibC();
 
     //raygui
@@ -49,7 +86,7 @@ pub fn build(b: *std.Build) !void {
 
     //--- just build raylib_parser.exe ------------------------------------------------------------
     const raylib_parser_install = b.step("raylib_parser", "build ./zig-out/bin/raylib_parser.exe");
-    const generateBindings_install = b.addInstallArtifact(raylib_parser_build);
+    const generateBindings_install = b.addInstallArtifact(raylib_parser_build, .{});
     raylib_parser_install.dependOn(&generateBindings_install.step);
 }
 

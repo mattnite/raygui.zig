@@ -1,0 +1,10 @@
+.{
+    .name = "raygui.zig",
+    .version = "0.0.1",
+    .dependencies = .{
+        .raylib_zig = .{
+            .url = "https://github.com/mattnite/raylib-zig/archive/b101c9387371d702a4fcc0f07e23fdb2e90625f4.tar.gz",
+            .hash = "122059d364849d57bf17f2dada2cbd343bba6d1740d6f191821b8467b25bc73a845a",
+        },
+    },
+}
