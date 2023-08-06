@@ -13,20 +13,12 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    const raylib_dep = b.dependency("raylib", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    _ = raylib_dep;
-
-    const mod = b.addModule("raygui", .{
+    _ = b.addModule("raygui", .{
         .source_file = .{ .path = "raygui.zig" },
         .dependencies = &.{
             .{ .name = "raylib", .module = raylib_zig_dep.module("raylib") },
         },
     });
-    _ = mod;
 
     const lib = b.addStaticLibrary(.{
         .name = "raygui_marshal",
@@ -100,25 +92,3 @@ fn current_file() []const u8 {
 const cwd = std.fs.path.dirname(current_file()).?;
 const sep = std.fs.path.sep_str;
 const dir_raygui = cwd ++ sep ++ "raygui/src";
-
-/// add this package to lib
-pub fn addTo(b: *std.Build, lib: *std.build.LibExeObjStep, target: std.zig.CrossTarget, optimize: std.builtin.Mode) void {
-    _ = b;
-    _ = optimize;
-    _ = target;
-
-    if (lib.modules.get("raylib") orelse lib.modules.get("raylib.zig") orelse lib.modules.get("raylib-zig")) |raylib| {
-        lib.addAnonymousModule("raygui", .{
-            .source_file = .{ .path = cwd ++ sep ++ "raygui.zig" },
-            .dependencies = &.{
-                .{ .name = "raylib", .module = raylib },
-            },
-        });
-        lib.addIncludePath(dir_raygui);
-        lib.addIncludePath(cwd);
-        lib.linkLibC();
-        lib.addCSourceFile(cwd ++ sep ++ "raygui_marshal.c", &.{"-DRAYGUI_IMPLEMENTATION"});
-    } else {
-        std.debug.panic("lib needs to have 'raylib', 'raylib.zig' or 'raylib-zig' as module dependency", .{});
-    }
-}
